@@ -1,0 +1,13 @@
+variables:
+  # 项目部署唯一标识
+  APP_NAME: bid-server
+  # 项目sonar名称
+  SONAR_NAME: bid-server
+
+include:
+  - project: 'devops/argo-ci'
+    ref: master
+    file: 'templates/.gitlab-ci-template-sonar78-maven.yml'
+  - project: 'devops/argo-ci'
+    ref: master
+    file: 'templates/java/gitlab-ci-template-java.yml'

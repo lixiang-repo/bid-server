@@ -1,0 +1,29 @@
+#端点信息监控
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    tags:
+      application: bid-server
+  info:
+    git:
+      mode: full
+  health:
+    defaults:
+      enabled: false
+
+#4核心，8G
+server:
+  tomcat:
+    uri-encoding: UTF-8
+    threads:
+      max: 1000
+      min-spare: 30
+    max-connections: 20000 #最大连接数
+    accept-count: 1000 #最大等待队列，如果并发超过21000则直接拒绝
+    connection-timeout: 10000

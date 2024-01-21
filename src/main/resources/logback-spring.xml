@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+<!--    <property name="log.dir" value="/data/logs/sjava"/>-->
+    <property name="log.dir" value="./logs"/>
+    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+            <layout class="cn.taqu.core.log.LogbackLayout"/>
+        </encoder>
+    </appender>
+
+    <!-- trace日志 -->
+    <appender name="traceFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${log.dir}/trace.%d{yyyy-MM-dd}.log</fileNamePattern>
+        </rollingPolicy>
+        <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+            <layout class="cn.taqu.core.log.LogbackLayout"/>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>TRACE</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+    <!-- debug日志 -->
+    <appender name="debugFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${log.dir}/debug.%d{yyyy-MM-dd}.log</fileNamePattern>
+        </rollingPolicy>
+        <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+            <layout class="cn.taqu.core.log.LogbackLayout"/>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>DEBUG</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+    <!-- info日志 -->
+    <appender name="infoFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${log.dir}/info.%d{yyyy-MM-dd}.log</fileNamePattern>
+        </rollingPolicy>
+        <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+            <layout class="cn.taqu.core.log.LogbackLayout"/>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>INFO</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+    <!-- warn日志 -->
+    <appender name="warnFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${log.dir}/warn.%d{yyyy-MM-dd}.log</fileNamePattern>
+        </rollingPolicy>
+        <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+            <layout class="cn.taqu.core.log.LogbackLayout"/>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>WARN</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+    <!-- error日志 -->
+    <appender name="errorFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${log.dir}/error.%d{yyyy-MM-dd}.log</fileNamePattern>
+        </rollingPolicy>
+        <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+            <layout class="cn.taqu.core.log.LogbackLayout"/>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+
+    <logger name="cn.taqu" level="INFO"/>
+    <logger name="jdbc.sqltiming" level="ERROR"/>
+    <logger name="jdbc.sqlonly" level="WARN"/>
+    <logger name="jdbc.resultset" level="ERROR"/>
+    <logger name="jdbc.audit" level="ERROR"/>
+    <logger name="jdbc.connection" level="ERROR"/>
+    <logger name="org.elasticsearch" level="INFO"/>
+    <logger name="org.springframework.kafka" level="INFO"/>
+    <logger name="org.springframework.boot" level="ERROR"/>
+    <logger name="org.apache.rocketmq" level="ERROR"/>
+
+    <springProfile name="prod">
+        <logger name="cn.taqu" level="INFO"/>
+        <root level="INFO">
+            <appender-ref ref="errorFile"/>
+            <appender-ref ref="warnFile"/>
+            <appender-ref ref="infoFile"/>
+        </root>
+    </springProfile>
+
+    <springProfile name="local,dev">
+        <logger name="cn.taqu" level="Info"/>
+        <root level="Info">
+            <appender-ref ref="errorFile"/>
+            <appender-ref ref="warnFile"/>
+            <appender-ref ref="infoFile"/>
+            <appender-ref ref="debugFile"/>
+            <appender-ref ref="traceFile"/>
+            <appender-ref ref="console"/>
+        </root>
+    </springProfile>
+
+    <springProfile name="test">
+        <root level="INFO">
+            <appender-ref ref="errorFile"/>
+            <appender-ref ref="warnFile"/>
+            <appender-ref ref="infoFile"/>
+            <appender-ref ref="console"/>
+        </root>
+    </springProfile>
+
+</configuration>
