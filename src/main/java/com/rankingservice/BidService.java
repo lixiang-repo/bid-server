@@ -179,7 +179,7 @@ public class BidService implements RankingService {
                 "uuid:%s, item_size:%s, user_feature cost time:%d ms,  item_feature cost time:%d ms, " +
                 "tfrecord cost time:%d ms, tf serving cost time:%d ms, total time:%d ms",
                 userInfo.getUuid(), items.size(), time2 - time1, time3 - time2,
-                time4 - time3, time5 - time3, time5 - time1
+                time4 - time3, time5 - time4, time5 - time1
         ));
         return items;
     }
