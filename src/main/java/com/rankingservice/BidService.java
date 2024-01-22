@@ -217,7 +217,7 @@ public class BidService implements RankingService {
 
 
     private ItemFeaturesPo getItemFeatures(UserObject userInfo, List<ItemObject> items) {
-        ItemFeaturesPo itemFeaturesPo= new ItemFeaturesPo();
+        ItemFeaturesPo itemFeaturesPo = new ItemFeaturesPo();
         Map<String, TFServingFeature> itemFeatures = new HashMap<>();
 
         for (String key : itemSchemaSet) {
