@@ -3,12 +3,22 @@
         "recall": [
             {
                 "map": {
-                    "advertiser_id": "60",
-                    "cid": "1980",
-                    "crid": "14091",
-                    "adid": "3343",
+                    "advertiser_id": "214",
+                    "cid": "2147",
+                    "crid": "16581",
+                    "adid": "925",
                     "adtype": "_",
-                    "size": "_"
+                    "size": ""
+                }
+            },
+            {
+                "map": {
+                    "advertiser_id": "214",
+                    "cid": "2147",
+                    "crid": "16581",
+                    "adid": "925",
+                    "adtype": "_",
+                    "size": ""
                 }
             }
         ]
@@ -19,30 +29,30 @@
         "uuid": "ci8j56o79j8d",
         "userMap": {},
         "contextMap": {
-            "deviceid": "5aec11f0-6e2a-4ded-b1c8-75c7cfddcad3",
+            "deviceid": "f9d257d2-3546-4924-9a0c-a6d287c4b919",
             "devicetype": "oaid",
             "os": "1",
-            "osv": "13.0.0",
-            "pub": "104",
-            "bundle": "com.gimica.ballbounce",
-            "subcat": "_",
-            "tagid": "1799487",
+            "osv": "13",
+            "pub": "116",
+            "bundle": "athena.studio.game.word.puzzle.woody.cross.anagram.scramble.connect.link.free.offline",
+            "subcat": "Games__Word",
+            "tagid": "132809827",
             "make": "samsung",
-            "model": "sm-s901b",
-            "country": "GB",
-            "state": "ENG",
-            "city": "London",
-            "language": "en",
+            "model": "SM-S918B",
+            "country": "AU",
+            "state": "WA",
+            "city": "Perth",
+            "language": "",
             "released_at": "_",
             "modelprice": "_",
             "chipset": "_",
             "camera_pixels": "_",
-            "sip": "5.80.89.199",
-            "ip": "5.80.89.199",
-            "ua": "Mozilla/5.0 (Linux; Android 13; SM-S901B Build/TP1A.220624.014; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/119.0.6045.66 Mobile Safari/537.36 WindVane/3.0.2",
-            "hour": "17",
+            "sip": "58.179.216.246",
+            "ip": "58.179.216.246",
+            "ua": "Mozilla/5.0 (Linux; Android 13; SM-S918B Build/TP1A.220624.014; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/119.0.6045.163 Mobile Safari/537.36",
+            "hour": "14",
             "appcat": "_",
-            "display": "MTG",
+            "display": "",
             "reward": "",
             "month": "12",
             "app_id": "com.zhiliaoapp.musically"
