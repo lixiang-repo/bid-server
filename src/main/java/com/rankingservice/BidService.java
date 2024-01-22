@@ -132,6 +132,7 @@ public class BidService implements RankingService {
         predictRequestBuilder.putInputs("record_type", recordTypeProto);
         predictRequestBuilder.putInputs("input", inputProto);
 
+        long time4 = System.currentTimeMillis();
         try{
             if (! stubMap.containsKey(userInfo.getVersion())) {
                 logger.error(String.format("bidserver version:%s is error", userInfo.getVersion()));
@@ -173,12 +174,12 @@ public class BidService implements RankingService {
         // 按权重排序
         //items.sort((x1, x2) -> -Double.compare(x1.getWeight(), x2.getWeight()));
 
-        long time4 = System.currentTimeMillis();
+        long time5 = System.currentTimeMillis();
         logger.info(String.format(
                 "uuid:%s, item_size:%s, user_feature cost time:%d ms,  item_feature cost time:%d ms, " +
-                "tf serving cost time:%d ms, total time:%d ms",
+                "tfrecord cost time:%d ms, tf serving cost time:%d ms, total time:%d ms",
                 userInfo.getUuid(), items.size(), time2 - time1, time3 - time2,
-                time4 - time3, time4 - time1
+                time4 - time3, time5 - time3, time5 - time1
         ));
         return items;
     }
