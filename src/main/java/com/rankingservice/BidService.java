@@ -211,7 +211,7 @@ public class BidService implements RankingService {
 
         }
 
-        ctxFeatures.put("label", new TFServingFeature(1L, VarType.FLOAT));
+        ctxFeatures.put("label", new TFServingFeature(1.0, VarType.FLOAT));
         userFeaturesPo.setCtxFeatures(ctxFeatures);
         return userFeaturesPo;
     }
