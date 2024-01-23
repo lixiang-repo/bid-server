@@ -197,11 +197,11 @@ public class BidService implements RankingService {
                     List<String> tfList = StringHelper.getTfList(userMap.getOrDefault(key, ""), ",", 50, "_");
                     ctxFeatures.put(key, new TFServingFeature(tfList, VarType.LIST_STR));
                 } else {
-                    ctxFeatures.put(key, new TFServingFeature(userMap.getOrDefault(key, "0"), VarType.STR));
+                    ctxFeatures.put(key, new TFServingFeature(userMap.getOrDefault(key, "1"), VarType.STR));
                 }
             } else if (ctxSchemaSet.contains(key)) { //@ctx
                 // hour, display
-                String v = ctxMap.getOrDefault(key, "_");
+                String v = StringHelper.fillNa(ctxMap.get(key));
                 if (schemaDtypeMap.get(key).equalsIgnoreCase("FLOAT")) {
                     ctxFeatures.put(key, new TFServingFeature(StringHelper.parseFloat(v, -1), VarType.FLOAT));
                 } else {
@@ -211,7 +211,7 @@ public class BidService implements RankingService {
 
         }
 
-        ctxFeatures.put("isclick", new TFServingFeature(1L, VarType.INT));
+        ctxFeatures.put("label", new TFServingFeature(1L, VarType.FLOAT));
         userFeaturesPo.setCtxFeatures(ctxFeatures);
         return userFeaturesPo;
     }
@@ -225,12 +225,12 @@ public class BidService implements RankingService {
             //industry, //i_imp_cnt_d90, i_hour_imp_cnt, u_industry_imp_item_cnt_d90
             if (schemaDtypeMap.get(key).equalsIgnoreCase("FLOAT")) {
                 List<Float> array = items.parallelStream().map(
-                        item -> StringHelper.parseFloat(item.getMap().getOrDefault(key, "-1"), -1)
+                        item -> StringHelper.parseFloat(item.getMap().get(key), -1)
                 ).collect(Collectors.toList());
                 itemFeatures.put(key, new TFServingFeature(array, VarType.LIST_FLOAT));
             } else if (schemaDtypeMap.get(key).equalsIgnoreCase("STRING")) {
                 List<String> array = items.parallelStream().map(
-                        item -> item.getMap().getOrDefault(key, "_")
+                        item -> StringHelper.fillNa(item.getMap().get(key))
                 ).collect(Collectors.toList());
                 itemFeatures.put(key, new TFServingFeature(array, VarType.LIST_STR));
             }

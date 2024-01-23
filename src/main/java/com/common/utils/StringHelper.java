@@ -8,6 +8,14 @@ import java.util.*;
 
 
 public class StringHelper {
+
+    public static String fillNa(String x) {
+        if (x == null || x.equalsIgnoreCase("")) {
+            x = "_";
+        }
+        return x;
+    }
+
     public static int parseInt(String s, int defaultValue){
         int ret = defaultValue;
 
