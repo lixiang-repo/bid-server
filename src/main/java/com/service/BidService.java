@@ -1,4 +1,4 @@
-package com.rankingservice;
+package com.service;
 
 import com.common.model.VarType;
 import com.common.model.*;

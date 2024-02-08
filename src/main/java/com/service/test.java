@@ -1,4 +1,4 @@
-package com.rankingservice;
+package com.service;
 
 
 import java.io.IOException;

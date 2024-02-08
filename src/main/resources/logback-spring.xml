@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
 
-<!--    <property name="log.dir" value="/data/logs/sjava"/>-->
-    <property name="log.dir" value="./logs"/>
+    <property name="log.dir" value="/data/logs/sjava"/>
+<!--    <property name="log.dir" value="./logs"/>-->
     <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
             <layout class="cn.taqu.core.log.LogbackLayout"/>
