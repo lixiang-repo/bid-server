@@ -10,45 +10,29 @@ import java.util.Map;
 public class ItemObject implements Comparable<ItemObject>, Serializable {
     private static final long serialVersionUID = -3133000493546506575L;
 
-    @JSONField(
-            name = "map"
-    )
+    @JSONField(name = "map")
     private Map<String, String> map;
 
-    @JSONField(
-            name = "pctr"
-    )
+    @JSONField(name = "pctr")
     private double pctr;
 
-    @JSONField(
-            name = "pcvr"
-    )
+    @JSONField(name = "pcvr")
     private double pcvr;
 
-    @JSONField(
-            name = "cpc"
-    )
+    @JSONField(name = "cpc")
     private double cpc;
 
-    @JSONField(
-            name = "ecpm"
-    )
+    @JSONField(name = "cpa")
+    private double cpa;
+
+    @JSONField(name = "ecpm")
     private double ecpm;
 
-    @JSONField(
-            name = "ocpc"
-    )
+    @JSONField(name = "ocpc")
     private double ocpc;
 
-    @JSONField(
-            name = "ocpm"
-    )
+    @JSONField(name = "ocpm")
     private double ocpm;
-
-    @JSONField(
-            name = "weight"
-    )
-    private double weight;
 
     public ItemObject() {}
 

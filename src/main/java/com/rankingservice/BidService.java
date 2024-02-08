@@ -37,6 +37,8 @@ public class BidService implements RankingService {
 
     HashSet<String> userAndctxSchemaSet;
 
+    HashMap<String, Integer> seqLengthMap;
+
     public void initSchema() throws IOException {
         schemaDtypeMap = new HashMap<>();
 
@@ -45,32 +47,45 @@ public class BidService implements RankingService {
         itemSchemaSet = new HashSet<>();
         userAndctxSchemaSet = new HashSet<>();
 
+        seqLengthMap = new HashMap<>();
+
         InputStream fileInputStream = getClass().getClassLoader().getResourceAsStream("schema.conf");
         BufferedReader br = new BufferedReader(new InputStreamReader(fileInputStream));
         String line;
         while ((line = br.readLine()) != null) {
-            if (line.startsWith("#")) {
+            if (line.startsWith("#") || line.startsWith("label")) {
                 continue;
             }
-            schemaDtypeMap.put(line.split(" +")[0], line.split(" +")[1]);
+            String name = line.split(" +")[0];
+            String dType = line.split(" +")[1];
+            schemaDtypeMap.put(name, dType);
             if (line.contains("@user")) {
-                userSchemaSet.add(line.split(" +")[0]);
-                userAndctxSchemaSet.add(line.split(" +")[0]);
+                userSchemaSet.add(name);
             } else if (line.contains("@ctx")) {
-                ctxSchemaSet.add(line.split(" +")[0]);
-                userAndctxSchemaSet.add(line.split(" +")[0]);
+                ctxSchemaSet.add(name);
             } else if (line.contains("@item")){
-                itemSchemaSet.add(line.split(" +")[0]);
+                itemSchemaSet.add(name);
             } else {
-                throw new IOException("@ctx @ctx @item must in line!");
+                throw new IOException("@user @ctx @item must in line!");
+            }
+            if (dType.contains("ARRAY")) {
+                if (dType.contains("(")) {
+                    //ARRAY<STRING>(10)
+                    int length = Integer.parseInt(dType.split("\\(")[1].replace(")", ""));
+                    seqLengthMap.put(name, length);
+                } else {
+                    seqLengthMap.put(name, 50);
+                }
             }
         }
-
-//        System.out.println("userSchemaSet: " + userSchemaSet);
-//        System.out.println("ctxSchemaSet: " + ctxSchemaSet);
-//        System.out.println("itemSchemaSet: " + itemSchemaSet);
-//        System.out.println("userAndctxSchemaSet: " + userAndctxSchemaSet);
-//        System.out.println("schemaDtypeMap: " + schemaDtypeMap);
+        userAndctxSchemaSet.addAll(userSchemaSet);
+        userAndctxSchemaSet.addAll(ctxSchemaSet);
+        System.out.println("userSchemaSet: " + userSchemaSet);
+        System.out.println("ctxSchemaSet: " + ctxSchemaSet);
+        System.out.println("itemSchemaSet: " + itemSchemaSet);
+        System.out.println("userAndctxSchemaSet: " + userAndctxSchemaSet);
+        System.out.println("schemaDtypeMap: " + schemaDtypeMap);
+        System.out.println("seqLengthMap: " + seqLengthMap);
 
     }
 
@@ -144,23 +159,21 @@ public class BidService implements RankingService {
                     logger.error("response is null! userinfo: " + userInfo.toString() + "items: " + items.toString());
                 } else {
                     List<Float> scores = response.getOutputsOrThrow("output").getFloatValList();
-                    if (scores == null){
+                    if (scores == null || scores.size() < items.size()){
                         logger.error("scores is null or error! userinfo: " + userInfo.toString() + "items: " + items.toString());
                     } else {
                         int scoreSize = scores.size();
+                        int itemSize = items.size();
 
-                        // 推荐Item权重赋值
-                        for (int i = 0; i < scoreSize; i++) {
+                        for (int i = 0; i < itemSize; i++) {
                             ItemObject item = items.get(i);
                             double pctr = scores.get(i);
-                            double pcvr = 0.0;//scores.get(scoreSize + i);
-                            double cpc = item.getCpc();
-                            double ecpm = pctr * cpc * 1000;
+                            double pcvr = itemSize + i < scoreSize? scores.get(itemSize + i): 0.0;
+                            double ecpm = item.getCpa() > 0? pctr * pcvr * item.getCpa() * 1000: pctr * item.getCpc() * 1000;
 
                             item.setPctr(pctr);
                             item.setPcvr(pcvr);
                             item.setEcpm(ecpm);
-                            item.setWeight(ecpm);
 
                         }
                     }
@@ -190,28 +203,30 @@ public class BidService implements RankingService {
 
         Map<String, String> userMap = userInfo.getUserMap();
         Map<String, String> ctxMap = userInfo.getContextMap();
-        for (String key : userAndctxSchemaSet) {
-            if (userSchemaSet.contains(key)) { // @user
+        for (String name : userAndctxSchemaSet) {
+            if (userSchemaSet.contains(name)) { // @user
                 // u_imp_cnt_d90, u_advertiser_id_imp_cnt_d90(advertiser_id注意下划线)
-                if (schemaDtypeMap.get(key).contains("ARRAY")) {
-                    List<String> tfList = StringHelper.getTfList(userMap.getOrDefault(key, ""), ",", 50, "_");
-                    ctxFeatures.put(key, new TFServingFeature(tfList, VarType.LIST_STR));
+                if (schemaDtypeMap.get(name).contains("ARRAY")) {
+                    List<String> tfList = StringHelper.getTfList(userMap.getOrDefault(name, ""), ",", seqLengthMap.get(name), "_");
+                    ctxFeatures.put(name, new TFServingFeature(tfList, VarType.LIST_STR));
                 } else {
-                    ctxFeatures.put(key, new TFServingFeature(userMap.getOrDefault(key, "1"), VarType.STR));
+                    ctxFeatures.put(name, new TFServingFeature(userMap.getOrDefault(name, "1"), VarType.STR));
                 }
-            } else if (ctxSchemaSet.contains(key)) { //@ctx
+            } else if (ctxSchemaSet.contains(name)) { //@ctx
                 // hour, display
-                String v = StringHelper.fillNa(ctxMap.get(key));
-                if (schemaDtypeMap.get(key).equalsIgnoreCase("FLOAT")) {
-                    ctxFeatures.put(key, new TFServingFeature(StringHelper.parseFloat(v, -1), VarType.FLOAT));
+                String v = StringHelper.fillNa(ctxMap.get(name));
+                if (schemaDtypeMap.get(name).equalsIgnoreCase("FLOAT")) {
+                    ctxFeatures.put(name, new TFServingFeature(StringHelper.parseFloat(v, -1), VarType.FLOAT));
                 } else {
-                    ctxFeatures.put(key, new TFServingFeature(v, VarType.STR));
+                    ctxFeatures.put(name, new TFServingFeature(v, VarType.STR));
                 }
             }
 
         }
 
         ctxFeatures.put("label", new TFServingFeature(1.0, VarType.FLOAT));
+        ctxFeatures.put("label1", new TFServingFeature(1.0, VarType.FLOAT));
+        ctxFeatures.put("label2", new TFServingFeature(1.0, VarType.FLOAT));
         userFeaturesPo.setCtxFeatures(ctxFeatures);
         return userFeaturesPo;
     }
@@ -221,18 +236,18 @@ public class BidService implements RankingService {
         ItemFeaturesPo itemFeaturesPo = new ItemFeaturesPo();
         Map<String, TFServingFeature> itemFeatures = new HashMap<>();
 
-        for (String key : itemSchemaSet) {
+        for (String name : itemSchemaSet) {
             //industry, //i_imp_cnt_d90, i_hour_imp_cnt, u_industry_imp_item_cnt_d90
-            if (schemaDtypeMap.get(key).equalsIgnoreCase("FLOAT")) {
+            if (schemaDtypeMap.get(name).equalsIgnoreCase("FLOAT")) {
                 List<Float> array = items.parallelStream().map(
-                        item -> StringHelper.parseFloat(item.getMap().get(key), -1)
+                        item -> StringHelper.parseFloat(item.getMap().get(name), -1)
                 ).collect(Collectors.toList());
-                itemFeatures.put(key, new TFServingFeature(array, VarType.LIST_FLOAT));
-            } else if (schemaDtypeMap.get(key).equalsIgnoreCase("STRING")) {
+                itemFeatures.put(name, new TFServingFeature(array, VarType.LIST_FLOAT));
+            } else if (schemaDtypeMap.get(name).equalsIgnoreCase("STRING")) {
                 List<String> array = items.parallelStream().map(
-                        item -> StringHelper.fillNa(item.getMap().get(key))
+                        item -> StringHelper.fillNa(item.getMap().get(name))
                 ).collect(Collectors.toList());
-                itemFeatures.put(key, new TFServingFeature(array, VarType.LIST_STR));
+                itemFeatures.put(name, new TFServingFeature(array, VarType.LIST_STR));
             }
 
         }

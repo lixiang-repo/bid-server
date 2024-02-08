@@ -16,7 +16,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/bidserver")
 public class RankingController {
-    private final Logger LOG = LoggerFactory.getLogger(getClass());
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Resource(name = "BidService")
     private RankingService rankingService;
@@ -26,25 +26,25 @@ public class RankingController {
         UserObject userInfo = queryObj.getUserInfo();
 
         if (userInfo == null){
-            LOG.error("bid-server, userinfo is null");
+            logger.error("bid-server, userinfo is null");
             return null;
         }
 
         String uuid = userInfo.getUuid();
         if (StringUtils.isBlank(uuid)){
-            LOG.info("bid-server, 用户ID为空: " + userInfo);
+            logger.info("bid-server, 用户ID为空: " + userInfo);
             return null;
         }
 
         List<ItemObject> items = queryObj.getItems();
         if (items == null || items.size() == 0){
-            LOG.info("bid-server, items size=0");
+            logger.info("bid-server, items size=0");
             return null;
         }
 
         List<ItemObject> results = rankingService.rank(userInfo, items);
         if (results == null || results.size() == 0 || results.size() != items.size()) {
-            LOG.info("bid-server, 异常, 结果为空 " + results);
+            logger.info("bid-server, 异常, 结果为空 " + results);
         }
 
         return results;
