@@ -1,6 +1,5 @@
-package com.common.utils;
+package com.common.model;
 
-import com.common.model.VarType;
 import lombok.*;
 
 @Getter

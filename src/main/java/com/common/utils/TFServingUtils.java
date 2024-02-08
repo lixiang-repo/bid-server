@@ -1,5 +1,6 @@
 package com.common.utils;
 
+import com.common.model.TFServingFeature;
 import com.common.model.VarType;
 import google.meiyou.protobuf.ByteString;
 import io.grpc.ManagedChannel;

@@ -2,7 +2,7 @@ package com.rankingservice;
 
 import com.common.model.VarType;
 import com.common.model.*;
-import com.common.utils.TFServingFeature;
+import com.common.model.TFServingFeature;
 import com.common.utils.TFServingUtils;
 import com.common.utils.*;
 import google.meiyou.protobuf.ByteString;
@@ -18,7 +18,6 @@ import tensorflow.serving.PredictionServiceGrpc;
 import javax.annotation.PostConstruct;
 import java.io.*;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service("BidService")
