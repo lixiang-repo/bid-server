@@ -10,29 +10,19 @@ import java.util.Map;
 public class UserObject implements Serializable {
     private static final long serialVersionUID = 3470193328421337453L;
 
-    @JSONField(
-            name = "trackingId"
-    )
+    @JSONField(name = "trackingId")
     private String trackingId;
 
-    @JSONField(
-            name = "version"
-    )
+    @JSONField(name = "version")
     private String version;
 
-    @JSONField(
-            name = "uuid"
-    )
+    @JSONField(name = "uuid")
     private String uuid;
 
-    @JSONField(
-            name = "userMap"
-    )
+    @JSONField(name = "userMap")
     private Map<String, String> userMap;
 
-    @JSONField(
-            name = "contextMap"
-    )
+    @JSONField(name = "contextMap")
     private Map<String, String> contextMap;
 
     public UserObject() {}
