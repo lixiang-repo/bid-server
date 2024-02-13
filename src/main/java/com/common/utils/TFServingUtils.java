@@ -105,27 +105,29 @@ public class TFServingUtils {
             case LIST_INT:
             case LIST_LONG:
                 List<Object> numList = (List)featureValue;
-                List<Long> longList = numList.parallelStream()
-                        .map(x -> ((Number)x).longValue())
-                        .collect(Collectors.toList());
+                List<Long> longList = numList.parallelStream().map(
+                                x -> ((Number)x).longValue()
+                        ).collect(Collectors.toList());
                 feature = Feature.newBuilder().setInt64List(
                         Int64List.newBuilder().addAllValue(longList)
                 ).build();
                 break;
             case LIST_STR:
                 List<Object> strlist = (List)featureValue;
-                List<ByteString> byteStringList = strlist.parallelStream()
-                        .map(x -> ByteString.copyFromUtf8((String)x))
-                        .collect(Collectors.toList());
+                List<ByteString> byteStringList = strlist.parallelStream().map(
+                        x -> ByteString.copyFromUtf8((String)x)
+                ).collect(Collectors.toList());
+
                 feature = Feature.newBuilder().setBytesList(
                         BytesList.newBuilder().addAllValue(byteStringList)
                 ).build();
                 break;
             case LIST_FLOAT:
                 List<Object> floatlist = (List)featureValue;
-                List<Float> floatList =  floatlist.parallelStream()
-                        .map(x -> ((Number)x).floatValue())
-                        .collect(Collectors.toList());
+                List<Float> floatList =  floatlist.parallelStream().map(
+                                x -> ((Number)x).floatValue()
+                        ).collect(Collectors.toList());
+
                 feature = Feature.newBuilder().setFloatList(
                         FloatList.newBuilder().addAllValue(floatList)
                 ).build();
@@ -145,29 +147,29 @@ public class TFServingUtils {
             case LIST_INT:
             case LIST_LONG:
                 List<Object> numList = (List)featureValue;
-                features = numList.parallelStream()
-                        .map(x -> Feature.newBuilder().setInt64List(Int64List.newBuilder().addValue(((Number)x).longValue())).build())
-                        .collect(Collectors.toList());
+                features = numList.parallelStream().map(
+                                x -> Feature.newBuilder().setInt64List(Int64List.newBuilder().addValue(((Number)x).longValue())).build()
+                        ).collect(Collectors.toList());
                 break;
             case LIST_FLOAT:
                 List<Object> fList = (List)featureValue;
-                features = fList.parallelStream()
-                        .map(x -> Feature.newBuilder().setFloatList(FloatList.newBuilder().addValue(((Number)x).floatValue())).build())
-                        .collect(Collectors.toList());
+                features = fList.parallelStream().map(
+                                x -> Feature.newBuilder().setFloatList(FloatList.newBuilder().addValue(((Number)x).floatValue())).build()
+                        ).collect(Collectors.toList());
                 break;
             case LIST_STR:
                 List<Object> strlist = (List)featureValue;
-                features = strlist.parallelStream()
-                        .map(x -> Feature.newBuilder().setBytesList(BytesList.newBuilder().addValue(ByteString.copyFromUtf8((String)x))).build())
-                        .collect(Collectors.toList());
+                features = strlist.parallelStream().map(
+                                x -> Feature.newBuilder().setBytesList(BytesList.newBuilder().addValue(ByteString.copyFromUtf8((String)x))).build()
+                        ).collect(Collectors.toList());
                 break;
             case LIST_LIST_STR:
                 List<Object> strlist_list = (List)featureValue;
                 for (Object v: strlist_list){
                     List<Object> str_list = (List)v;
-                    List<ByteString> list_bytes = str_list.parallelStream()
-                            .map(x -> ByteString.copyFromUtf8((String)x))
-                            .collect(Collectors.toList());
+                    List<ByteString> list_bytes = str_list.parallelStream().map(
+                                    x -> ByteString.copyFromUtf8((String)x)
+                            ).collect(Collectors.toList());
 
                     Feature feature = Feature.newBuilder()
                             .setBytesList(BytesList.newBuilder().addAllValue(list_bytes))
