@@ -30,21 +30,10 @@ public class BidController {
             return null;
         }
 
-        String uuid = userInfo.getUuid();
-        if (StringUtils.isBlank(uuid)){
-            logger.info("bid-server, 用户ID为空: " + userInfo);
-            return null;
-        }
-
         List<ItemObject> items = queryObj.getItems();
-        if (items == null || items.size() == 0){
-            logger.info("bid-server, items size=0");
-            return null;
-        }
-
         List<ItemObject> results = baseService.predict(userInfo, items);
         if (results == null || results.size() == 0 || results.size() != items.size()) {
-            logger.info("bid-server, 异常, 结果为空 " + results);
+            logger.error("bid-server, 异常, 结果为空 " + results);
         }
 
         return results;
