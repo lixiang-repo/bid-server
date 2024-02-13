@@ -19,10 +19,10 @@ public class BidController {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Resource(name = "BidService")
-    private BidInterface rankingService;
-    
+    private BaseService baseService;
+
     @RequestMapping("/rank")
-    public List<ItemObject> getRankingList(@RequestBody QueryParams queryObj){
+    public List<ItemObject> predict(@RequestBody QueryParams queryObj){
         UserObject userInfo = queryObj.getUserInfo();
 
         if (userInfo == null){
@@ -42,7 +42,7 @@ public class BidController {
             return null;
         }
 
-        List<ItemObject> results = rankingService.predict(userInfo, items);
+        List<ItemObject> results = baseService.predict(userInfo, items);
         if (results == null || results.size() == 0 || results.size() != items.size()) {
             logger.info("bid-server, 异常, 结果为空 " + results);
         }
