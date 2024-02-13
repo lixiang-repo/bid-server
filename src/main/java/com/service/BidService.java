@@ -26,7 +26,7 @@ public class BidService implements RankingService {
 
     HashMap<String, PredictionServiceGrpc.PredictionServiceBlockingStub> stubMap;
 
-    HashMap<String, String> schemaDtypeMap;
+    HashMap<String, String> dtypeMap;
 
     HashSet<String> userSchemaSet;
 
@@ -39,7 +39,7 @@ public class BidService implements RankingService {
     HashMap<String, Integer> seqLengthMap;
 
     public void initSchema() throws IOException {
-        schemaDtypeMap = new HashMap<>();
+        dtypeMap = new HashMap<>();
 
         userSchemaSet = new HashSet<>();
         ctxSchemaSet = new HashSet<>();
@@ -57,7 +57,7 @@ public class BidService implements RankingService {
             }
             String name = line.split(" +")[0];
             String dType = line.split(" +")[1];
-            schemaDtypeMap.put(name, dType);
+            dtypeMap.put(name, dType);
             if (line.contains("@user")) {
                 userSchemaSet.add(name);
             } else if (line.contains("@ctx")) {
@@ -83,7 +83,7 @@ public class BidService implements RankingService {
         System.out.println("ctxSchemaSet: " + ctxSchemaSet);
         System.out.println("itemSchemaSet: " + itemSchemaSet);
         System.out.println("userAndctxSchemaSet: " + userAndctxSchemaSet);
-        System.out.println("schemaDtypeMap: " + schemaDtypeMap);
+        System.out.println("dtypeMap: " + dtypeMap);
         System.out.println("seqLengthMap: " + seqLengthMap);
 
     }
@@ -205,7 +205,7 @@ public class BidService implements RankingService {
         for (String name : userAndctxSchemaSet) {
             if (userSchemaSet.contains(name)) { // @user
                 // u_imp_cnt_d90, u_advertiser_id_imp_cnt_d90(advertiser_id注意下划线)
-                if (schemaDtypeMap.get(name).contains("ARRAY")) {
+                if (dtypeMap.get(name).contains("ARRAY")) {
                     List<String> tfList = StringHelper.getTfList(userMap.getOrDefault(name, ""), ",", seqLengthMap.get(name), "_");
                     ctxFeatures.put(name, new TFServingFeature(tfList, VarType.LIST_STR));
                 } else {
@@ -214,7 +214,7 @@ public class BidService implements RankingService {
             } else if (ctxSchemaSet.contains(name)) { //@ctx
                 // hour, display
                 String v = StringHelper.fillNa(ctxMap.get(name));
-                if (schemaDtypeMap.get(name).equalsIgnoreCase("FLOAT")) {
+                if (dtypeMap.get(name).equalsIgnoreCase("FLOAT")) {
                     ctxFeatures.put(name, new TFServingFeature(StringHelper.parseFloat(v, -1), VarType.FLOAT));
                 } else {
                     ctxFeatures.put(name, new TFServingFeature(v, VarType.STR));
@@ -237,12 +237,12 @@ public class BidService implements RankingService {
 
         for (String name : itemSchemaSet) {
             //industry, //i_imp_cnt_d90, i_hour_imp_cnt, u_industry_imp_item_cnt_d90
-            if (schemaDtypeMap.get(name).equalsIgnoreCase("FLOAT")) {
+            if (dtypeMap.get(name).equalsIgnoreCase("FLOAT")) {
                 List<Float> array = items.parallelStream().map(
                         item -> StringHelper.parseFloat(item.getMap().get(name), -1)
                 ).collect(Collectors.toList());
                 itemFeatures.put(name, new TFServingFeature(array, VarType.LIST_FLOAT));
-            } else if (schemaDtypeMap.get(name).equalsIgnoreCase("STRING")) {
+            } else if (dtypeMap.get(name).equalsIgnoreCase("STRING")) {
                 List<String> array = items.parallelStream().map(
                         item -> StringHelper.fillNa(item.getMap().get(name))
                 ).collect(Collectors.toList());
