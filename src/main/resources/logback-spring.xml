@@ -22,6 +22,9 @@
             <onMatch>ACCEPT</onMatch>
             <onMismatch>DENY</onMismatch>
         </filter>
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} * %logger *【%-5level】%msg%n</pattern>
+        </layout>
     </appender>
     <!-- debug日志 -->
     <appender name="debugFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
@@ -36,6 +39,9 @@
             <onMatch>ACCEPT</onMatch>
             <onMismatch>DENY</onMismatch>
         </filter>
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} * %logger *【%-5level】%msg%n</pattern>
+        </layout>
     </appender>
     <!-- info日志 -->
     <appender name="infoFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
@@ -50,6 +56,9 @@
             <onMatch>ACCEPT</onMatch>
             <onMismatch>DENY</onMismatch>
         </filter>
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} * %logger *【%-5level】%msg%n</pattern>
+        </layout>
     </appender>
     <!-- warn日志 -->
     <appender name="warnFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
@@ -64,6 +73,9 @@
             <onMatch>ACCEPT</onMatch>
             <onMismatch>DENY</onMismatch>
         </filter>
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} * %logger *【%-5level】%msg%n</pattern>
+        </layout>
     </appender>
     <!-- error日志 -->
     <appender name="errorFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
@@ -78,6 +90,9 @@
             <onMatch>ACCEPT</onMatch>
             <onMismatch>DENY</onMismatch>
         </filter>
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} * %logger *【%-5level】%msg%n</pattern>
+        </layout>
     </appender>
 
     <logger name="cn.taqu" level="INFO"/>
