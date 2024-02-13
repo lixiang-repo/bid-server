@@ -24,16 +24,13 @@ public class BidController {
     @RequestMapping("/rank")
     public List<ItemObject> predict(@RequestBody QueryParams queryObj){
         UserObject userInfo = queryObj.getUserInfo();
+        List<ItemObject> items = queryObj.getItems();
 
-        if (userInfo == null){
-            logger.error("bid-server, userinfo is null");
+        if (userInfo == null || items == null || items.size() == 0){
+            logger.error("bid-server, queryObj is error" + queryObj);
             return null;
         }
 
-        List<ItemObject> items = queryObj.getItems();
-        if (items == null || items.size() == 0) {
-            logger.error("bid-server, items is null");
-        }
         List<ItemObject> results = baseService.predict(userInfo, items);
         if (results == null || results.size() == 0 || results.size() != items.size()) {
             logger.error("bid-server, 异常, 结果为空 " + results);
