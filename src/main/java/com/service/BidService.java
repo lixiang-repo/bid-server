@@ -21,7 +21,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service("BidService")
-public class BidService implements RankingService {
+public class BidService implements BidInterface {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     HashMap<String, PredictionServiceGrpc.PredictionServiceBlockingStub> stubMap;
@@ -115,7 +115,7 @@ public class BidService implements RankingService {
     }
 
     @Override
-    public List<ItemObject> rank(UserObject userInfo, List<ItemObject> items) {
+    public List<ItemObject> predict(UserObject userInfo, List<ItemObject> items) {
         long time1 = System.currentTimeMillis();
         UserFeaturesPo userFeaturesPo = getCtxFeatures(userInfo);
         Map<String, TFServingFeature> ctxFeatures = userFeaturesPo.getCtxFeatures();

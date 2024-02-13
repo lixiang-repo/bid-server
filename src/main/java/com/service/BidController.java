@@ -15,11 +15,11 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/bidserver")
-public class RankingController {
+public class BidController {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Resource(name = "BidService")
-    private RankingService rankingService;
+    private BidInterface rankingService;
     
     @RequestMapping("/rank")
     public List<ItemObject> getRankingList(@RequestBody QueryParams queryObj){
@@ -42,7 +42,7 @@ public class RankingController {
             return null;
         }
 
-        List<ItemObject> results = rankingService.rank(userInfo, items);
+        List<ItemObject> results = rankingService.predict(userInfo, items);
         if (results == null || results.size() == 0 || results.size() != items.size()) {
             logger.info("bid-server, 异常, 结果为空 " + results);
         }

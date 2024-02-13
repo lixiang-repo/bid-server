@@ -5,8 +5,8 @@ import com.common.model.ItemObject;
 
 import java.util.List;
 
-public interface RankingService {
+public interface BidInterface {
 
-    List<ItemObject> rank(UserObject userQueryInfo, List<ItemObject> items);
+    List<ItemObject> predict(UserObject userQueryInfo, List<ItemObject> items);
 
 }

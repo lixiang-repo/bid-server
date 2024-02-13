@@ -19,7 +19,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableScheduling
 @ComponentScan(basePackages = {"cn","com"})
 
-public class RecommendationApplication {
+public class BidApplication {
 
 	@Bean
 	MeterRegistryCustomizer<MeterRegistry> configurer(){
@@ -27,7 +27,7 @@ public class RecommendationApplication {
 	}
 
 	public static void main(String[] args) {
-		SpringApplication.run(RecommendationApplication.class, args);
+		SpringApplication.run(BidApplication.class, args);
 	}
 
 }
