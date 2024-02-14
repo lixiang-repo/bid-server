@@ -40,6 +40,6 @@ public class BidController {
 
     @RequestMapping("/alive")
     public String checkAlive(){
-        return "hello bid-server!";
+        return "hello bid-server!\n";
     }
 }
