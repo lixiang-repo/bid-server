@@ -214,7 +214,7 @@ public abstract class BaseService {
                 Predict.PredictResponse response = stub.predict(predictRequestBuilder.build());
 
                 if (response == null) {
-                    logger.error("response is null! userinfo: " + userInfo.toString() + "items: " + items.toString());
+                    logger.error("response is null! userinfo: " + userInfo + "items: " + items);
                 } else {
                     List<Float> scores1 = response.getOutputsOrThrow("output1").getFloatValList();
                     TensorProto tensor2 = response.getOutputsOrDefault("output2", null);
