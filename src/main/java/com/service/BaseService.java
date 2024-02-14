@@ -31,8 +31,6 @@ public abstract class BaseService {
 
     HashSet<String> itemSchemaSet;
 
-    HashSet<String> userAndctxSchemaSet;
-
     HashMap<String, Integer> seqLengthMap;
 
     public void initSchema(String schema) throws IOException {
@@ -41,7 +39,6 @@ public abstract class BaseService {
         userSchemaSet = new HashSet<>();
         ctxSchemaSet = new HashSet<>();
         itemSchemaSet = new HashSet<>();
-        userAndctxSchemaSet = new HashSet<>();
 
         seqLengthMap = new HashMap<>();
 
@@ -74,12 +71,9 @@ public abstract class BaseService {
                 }
             }
         }
-        userAndctxSchemaSet.addAll(userSchemaSet);
-        userAndctxSchemaSet.addAll(ctxSchemaSet);
         logger.info("userSchemaSet: " + userSchemaSet);
         logger.info("ctxSchemaSet: " + ctxSchemaSet);
         logger.info("itemSchemaSet: " + itemSchemaSet);
-        logger.info("userAndctxSchemaSet: " + userAndctxSchemaSet);
         logger.info("dtypeMap: " + dtypeMap);
         logger.info("seqLengthMap: " + seqLengthMap);
 
@@ -111,31 +105,30 @@ public abstract class BaseService {
 
         Map<String, String> userMap = userInfo.getUserMap();
         Map<String, String> ctxMap = userInfo.getContextMap();
-        for (String name : userAndctxSchemaSet) {
-            if (userSchemaSet.contains(name)) { // @user
-                // u_imp_cnt_d90, u_advertiser_id_imp_cnt_d90(advertiser_id注意下划线)
-                if (dtypeMap.get(name).contains("ARRAY")) {
-                    List<String> tfList = StringHelper.getTfList(userMap.getOrDefault(name, ""), ",", seqLengthMap.get(name), "_");
-                    ctxFeatures.put(name, new TFServingFeature(tfList, VarType.LIST_STR));
-                } else if (dtypeMap.get(name).equalsIgnoreCase("STRING")) {
-                    ctxFeatures.put(name, new TFServingFeature(userMap.getOrDefault(name, "1"), VarType.STR));
-                } else if (dtypeMap.get(name).equalsIgnoreCase("FLOAT")) {
-                    ctxFeatures.put(name, new TFServingFeature(StringHelper.parseFloat(userMap.get(name), -1), VarType.FLOAT));
-                }
-
-            } else if (ctxSchemaSet.contains(name)) { //@ctx
-                // hour, display
-                String v = StringHelper.fillNa(ctxMap.get(name));
-                if (dtypeMap.get(name).contains("ARRAY")) {
-                    List<String> tfList = StringHelper.getTfList(v, ",", seqLengthMap.get(name), "_");
-                    ctxFeatures.put(name, new TFServingFeature(tfList, VarType.LIST_STR));
-                } else if (dtypeMap.get(name).equalsIgnoreCase("STRING")) {
-                    ctxFeatures.put(name, new TFServingFeature(v, VarType.STR));
-                } else if (dtypeMap.get(name).equalsIgnoreCase("FLOAT")) {
-                    ctxFeatures.put(name, new TFServingFeature(StringHelper.parseFloat(v, -1), VarType.FLOAT));
-                }
+        for (String name : userSchemaSet) { //@user
+            // u_imp_cnt_d90, u_advertiser_id_imp_cnt_d90(advertiser_id注意下划线)
+            if (dtypeMap.get(name).contains("ARRAY")) {
+                List<String> tfList = StringHelper.getTfList(userMap.getOrDefault(name, ""), ",", seqLengthMap.get(name), "_");
+                ctxFeatures.put(name, new TFServingFeature(tfList, VarType.LIST_STR));
+            } else if (dtypeMap.get(name).equalsIgnoreCase("STRING")) {
+                ctxFeatures.put(name, new TFServingFeature(userMap.getOrDefault(name, "1"), VarType.STR));
+            } else if (dtypeMap.get(name).equalsIgnoreCase("FLOAT")) {
+                ctxFeatures.put(name, new TFServingFeature(StringHelper.parseFloat(userMap.get(name), -1), VarType.FLOAT));
             }
 
+        }
+
+        for (String name : ctxSchemaSet) { //@ctx
+            // hour, display
+            String v = StringHelper.fillNa(ctxMap.get(name));
+            if (dtypeMap.get(name).contains("ARRAY")) {
+                List<String> tfList = StringHelper.getTfList(v, ",", seqLengthMap.get(name), "_");
+                ctxFeatures.put(name, new TFServingFeature(tfList, VarType.LIST_STR));
+            } else if (dtypeMap.get(name).equalsIgnoreCase("STRING")) {
+                ctxFeatures.put(name, new TFServingFeature(v, VarType.STR));
+            } else if (dtypeMap.get(name).equalsIgnoreCase("FLOAT")) {
+                ctxFeatures.put(name, new TFServingFeature(StringHelper.parseFloat(v, -1), VarType.FLOAT));
+            }
         }
 
         ctxFeatures.put("label", new TFServingFeature(1.0, VarType.FLOAT));
