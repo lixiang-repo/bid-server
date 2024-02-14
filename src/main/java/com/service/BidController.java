@@ -33,6 +33,7 @@ public class BidController {
         List<ItemObject> results = baseService.predict(userInfo, items);
         if (results == null || results.size() == 0 || results.size() != items.size()) {
             logger.error("bid-server, 结果异常 " + results);
+            return null;
         }
 
         return results;
