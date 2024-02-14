@@ -232,7 +232,9 @@ public abstract class BaseService {
                             ItemObject item = items.get(i);
                             double pctr = scores1.get(i);
                             double pcvr = scores2 != null? scores2.get(i): 0.0;
-                            double ecpm = item.getCpa() > 0? pctr * pcvr * item.getCpa() * 1000: pctr * item.getCpc() * 1000;
+                            double cpc = item.getCpc();
+                            double cpa = item.getCpa();
+                            double ecpm = cpa > 0? pctr * pcvr * cpa * 1000: pctr * cpc * 1000;
 
                             item.setPctr(pctr);
                             item.setPcvr(pcvr);
