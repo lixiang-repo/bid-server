@@ -3,14 +3,16 @@ package com.service;
 import com.common.model.UserObject;
 import com.common.model.ItemObject;
 import com.common.model.QueryParams;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 @RestController
@@ -21,12 +23,24 @@ public class BidController {
     @Resource(name = "BidService")
     private BaseService baseService;
 
+    private List<ItemObject> defaultItems;
+
+    @PostConstruct
+    public List<ItemObject> setDefaultItems() {
+        defaultItems = new ArrayList<>(1);
+        ItemObject item = new ItemObject();
+        item.setMap(new HashMap<>());
+        defaultItems.add(item);
+
+        return defaultItems;
+    }
+
     @RequestMapping("/rank")
     public List<ItemObject> predict(@RequestBody QueryParams queryObj){
         UserObject userInfo = queryObj.getUserInfo();
-        List<ItemObject> items = queryObj.getItems();
+        List<ItemObject> items = queryObj.getItems(defaultItems);
 
-        if (userInfo == null || items == null || items.size() == 0){
+        if (userInfo == null || items == null || items.size() == 0) {
             logger.error("bid-server, queryObj is error" + queryObj);
             return null;
         }

@@ -1,8 +1,6 @@
 package com.common.model;
 
 import lombok.Data;
-
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -13,8 +11,11 @@ public class QueryParams {
 
     private Map<String, List<ItemObject>> map;
 
-    public List<ItemObject> getItems() {
-        return map.getOrDefault("recall", new ArrayList<ItemObject>());
+    public List<ItemObject> getItems(List<ItemObject> defaultItems) {
+        if (map == null || map.get("recall") == null || map.get("recall").size() == 0) {
+            return defaultItems;
+        }
+        return map.get("recall");
     }
 
 }
