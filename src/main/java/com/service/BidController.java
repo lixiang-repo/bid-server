@@ -26,13 +26,13 @@ public class BidController {
         List<ItemObject> items = queryObj.getItems();
 
         if (userInfo == null || items == null || items.size() == 0) {
-            logger.error("bid-server, queryObj is error" + queryObj);
+            logger.error("bid-server, queryObj is error " + queryObj);
             return null;
         }
 
         List<ItemObject> results = baseService.predict(userInfo, items);
         if (results == null || results.size() == 0 || results.size() != items.size()) {
-            logger.error("bid-server, 异常, 结果为空 " + results);
+            logger.error("bid-server, 结果异常 " + results);
         }
 
         return results;
