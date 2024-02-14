@@ -224,8 +224,8 @@ public abstract class BaseService {
                     }
 
                     int itemSize = items.size();
-                    if (scores1 == null || scores1.size() != itemSize || (scores2 != null && scores2.size() != itemSize)){
-                        logger.error("scores is null or error! userinfo: " + userInfo.toString() + "items: " + items.toString());
+                    if (scores1 == null || scores1.size() != itemSize || (scores2 != null && scores2.size() != itemSize)) {
+                        logger.error("scores is null or error! userinfo: " + userInfo + "items: " + items);
                     } else {
 
                         for (int i = 0; i < itemSize; i++) {
@@ -246,7 +246,7 @@ public abstract class BaseService {
             }
 
         } catch (Exception e){
-            logger.error("bid-server Exception: " + e + " userinfo: " + userInfo.toString() + " items: " + items.toString());
+            logger.error("bid-server Exception: " + e + " userinfo: " + userInfo + " items: " + items);
         }
 
         // 按权重排序
