@@ -216,17 +216,22 @@ public abstract class BaseService {
                 if (response == null) {
                     logger.error("response is null! userinfo: " + userInfo.toString() + "items: " + items.toString());
                 } else {
-                    List<Float> scores = response.getOutputsOrThrow("output").getFloatValList();
-                    if (scores == null || scores.size() < items.size()){
+                    List<Float> scores1 = response.getOutputsOrThrow("output1").getFloatValList();
+                    TensorProto tensor2 = response.getOutputsOrDefault("output2", null);
+                    List<Float> scores2 = null;
+                    if (tensor2 != null) {
+                        scores2 = tensor2.getFloatValList();
+                    }
+
+                    int itemSize = items.size();
+                    if (scores1 == null || scores1.size() != itemSize || (scores2 != null && scores2.size() != itemSize)){
                         logger.error("scores is null or error! userinfo: " + userInfo.toString() + "items: " + items.toString());
                     } else {
-                        int scoreSize = scores.size();
-                        int itemSize = items.size();
 
                         for (int i = 0; i < itemSize; i++) {
                             ItemObject item = items.get(i);
-                            double pctr = scores.get(i);
-                            double pcvr = itemSize + i < scoreSize? scores.get(itemSize + i): 0.0;
+                            double pctr = scores1.get(i);
+                            double pcvr = scores2 != null? scores2.get(i): 0.0;
                             double ecpm = item.getCpa() > 0? pctr * pcvr * item.getCpa() * 1000: pctr * item.getCpc() * 1000;
 
                             item.setPctr(pctr);
