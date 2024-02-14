@@ -36,6 +36,10 @@ public class ItemObject implements Comparable<ItemObject>, Serializable {
 
     public ItemObject() {}
 
+    public ItemObject(Map<String, String> map) {
+        this.map = map;
+    }
+
     @Override
     public int compareTo(ItemObject o) {
         return Double.compare(o.ecpm, this.ecpm);

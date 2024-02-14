@@ -9,10 +9,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 @RestController
@@ -23,22 +20,10 @@ public class BidController {
     @Resource(name = "BidService")
     private BaseService baseService;
 
-    private List<ItemObject> defaultItems;
-
-    @PostConstruct
-    public List<ItemObject> setDefaultItems() {
-        defaultItems = new ArrayList<>(1);
-        ItemObject item = new ItemObject();
-        item.setMap(new HashMap<>());
-        defaultItems.add(item);
-
-        return defaultItems;
-    }
-
     @RequestMapping("/rank")
     public List<ItemObject> predict(@RequestBody QueryParams queryObj){
         UserObject userInfo = queryObj.getUserInfo();
-        List<ItemObject> items = queryObj.getItems(defaultItems);
+        List<ItemObject> items = queryObj.getItems();
 
         if (userInfo == null || items == null || items.size() == 0) {
             logger.error("bid-server, queryObj is error" + queryObj);
