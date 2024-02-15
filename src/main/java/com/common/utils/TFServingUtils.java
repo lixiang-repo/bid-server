@@ -5,9 +5,6 @@ import com.common.model.VarType;
 import google.meiyou.protobuf.ByteString;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
-//import org.tensorflow.protobuf.ByteString;
-//import org.tensorflow.grpc.ManagedChannel;
-//import org.tensorflow.grpc.ManagedChannelBuilder;
 import jdk.nashorn.internal.runtime.regexp.joni.exception.ValueException;
 import org.tensorflow.example.*;
 import tensorflow.serving.Model;
@@ -71,7 +68,6 @@ public class TFServingUtils {
         }
 
         FeatureLists seqFeatures = FeatureLists.newBuilder().putAllFeatureList(seqFeatureMap).build();
-
         return SequenceExample.newBuilder().
                 setContext(ctxFeatures).
                 setFeatureLists(seqFeatures).
@@ -83,39 +79,28 @@ public class TFServingUtils {
         Object featureValue = tfServingFeature.getFeature();
         VarType featureType = tfServingFeature.getFeatureType();
         switch (featureType){
-            case INT:
-            case LONG:
-                long number = ((Number)featureValue).longValue();
-                feature = Feature.newBuilder().setInt64List(
-                        Int64List.newBuilder().addValue(number)
+            case STR:
+                String stringValue = (String) featureValue;
+                feature = Feature.newBuilder().setBytesList(
+                        BytesList.newBuilder().addValue(ByteString.copyFromUtf8(stringValue))
                 ).build();
                 break;
             case FLOAT:
-                float num = ((Number)featureValue).floatValue();
+                float floatValue = ((Number) featureValue).floatValue();
                 feature = Feature.newBuilder().setFloatList(
-                        FloatList.newBuilder().addValue(num)
+                        FloatList.newBuilder().addValue(floatValue)
                 ).build();
                 break;
-            case STR:
-                String str = (String)featureValue;
-                feature = Feature.newBuilder().setBytesList(
-                        BytesList.newBuilder().addValue(ByteString.copyFromUtf8(str))
-                ).build();
-                break;
-            case LIST_INT:
-            case LIST_LONG:
-                List<Object> numList = (List)featureValue;
-                List<Long> longList = numList.parallelStream().map(
-                                x -> ((Number)x).longValue()
-                        ).collect(Collectors.toList());
+            case LONG:
+                long longValue = ((Number) featureValue).longValue();
                 feature = Feature.newBuilder().setInt64List(
-                        Int64List.newBuilder().addAllValue(longList)
+                        Int64List.newBuilder().addValue(longValue)
                 ).build();
                 break;
             case LIST_STR:
-                List<Object> strlist = (List)featureValue;
-                List<ByteString> byteStringList = strlist.parallelStream().map(
-                        x -> ByteString.copyFromUtf8((String)x)
+                List<String> stringList = (List<String>) featureValue;
+                List<ByteString> byteStringList = stringList.parallelStream().map(
+                        x -> ByteString.copyFromUtf8(x)
                 ).collect(Collectors.toList());
 
                 feature = Feature.newBuilder().setBytesList(
@@ -123,13 +108,19 @@ public class TFServingUtils {
                 ).build();
                 break;
             case LIST_FLOAT:
-                List<Object> floatlist = (List)featureValue;
-                List<Float> floatList =  floatlist.parallelStream().map(
-                                x -> ((Number)x).floatValue()
-                        ).collect(Collectors.toList());
-
+                List<Number> floatList = (List<Number>) featureValue;
                 feature = Feature.newBuilder().setFloatList(
-                        FloatList.newBuilder().addAllValue(floatList)
+                        FloatList.newBuilder().addAllValue(
+                                floatList.parallelStream().map(x -> x.floatValue()).collect(Collectors.toList())
+                        )
+                ).build();
+                break;
+            case LIST_LONG:
+                List<Number> longList = (List<Number>) featureValue;
+                feature = Feature.newBuilder().setInt64List(
+                        Int64List.newBuilder().addAllValue(
+                                longList.parallelStream().map(x -> x.longValue()).collect(Collectors.toList())
+                        )
                 ).build();
                 break;
             default:
@@ -144,39 +135,47 @@ public class TFServingUtils {
         Object featureValue = tfServingFeature.getFeature();
         VarType featureType = tfServingFeature.getFeatureType();
         switch (featureType){
-            case LIST_INT:
-            case LIST_LONG:
-                List<Object> numList = (List)featureValue;
-                features = numList.parallelStream().map(
-                                x -> Feature.newBuilder().setInt64List(Int64List.newBuilder().addValue(((Number)x).longValue())).build()
-                        ).collect(Collectors.toList());
+            case LIST_STR:
+                List<String> stringList = (List<String>) featureValue;
+                features = stringList.parallelStream().map(
+                        x -> Feature.newBuilder().setBytesList(BytesList.newBuilder().addValue(ByteString.copyFromUtf8(x))).build()
+                ).collect(Collectors.toList());
                 break;
             case LIST_FLOAT:
-                List<Object> fList = (List)featureValue;
-                features = fList.parallelStream().map(
-                                x -> Feature.newBuilder().setFloatList(FloatList.newBuilder().addValue(((Number)x).floatValue())).build()
-                        ).collect(Collectors.toList());
+                List<Number> floatList = (List<Number>) featureValue;
+                features = floatList.parallelStream().map(
+                        x -> Feature.newBuilder().setFloatList(FloatList.newBuilder().addValue(x.floatValue())).build()
+                ).collect(Collectors.toList());
                 break;
-            case LIST_STR:
-                List<Object> strlist = (List)featureValue;
-                features = strlist.parallelStream().map(
-                                x -> Feature.newBuilder().setBytesList(BytesList.newBuilder().addValue(ByteString.copyFromUtf8((String)x))).build()
-                        ).collect(Collectors.toList());
+            case LIST_LONG:
+                List<Number> longList = (List<Number>) featureValue;
+                features = longList.parallelStream().map(
+                        x -> Feature.newBuilder().setInt64List(Int64List.newBuilder().addValue(x.longValue())).build()
+                ).collect(Collectors.toList());
                 break;
             case LIST_LIST_STR:
-                List<Object> strlist_list = (List)featureValue;
-                for (Object v: strlist_list){
-                    List<Object> str_list = (List)v;
-                    List<ByteString> list_bytes = str_list.parallelStream().map(
-                                    x -> ByteString.copyFromUtf8((String)x)
-                            ).collect(Collectors.toList());
-
-                    Feature feature = Feature.newBuilder()
-                            .setBytesList(BytesList.newBuilder().addAllValue(list_bytes))
-                            .build();
-
-                    features.add(feature);
-                }
+                List<List<String>> listListStr = (List<List<String>>) featureValue;
+                features = listListStr.parallelStream().map(list -> {
+                    List<ByteString> byteStringList = list.parallelStream().map(x -> ByteString.copyFromUtf8(x)).collect(Collectors.toList());
+                    Feature feature = Feature.newBuilder().setBytesList(BytesList.newBuilder().addAllValue(byteStringList)).build();
+                    return feature;
+                }).collect(Collectors.toList());
+                break;
+            case LIST_LIST_FLOAT:
+                List<List<Number>> listListFloat = (List<List<Number>>) featureValue;
+                features = listListFloat.parallelStream().map(list -> {
+                    List<Float> floats = list.parallelStream().map(x -> x.floatValue()).collect(Collectors.toList());
+                    Feature feature = Feature.newBuilder().setFloatList(FloatList.newBuilder().addAllValue(floats)).build();
+                    return feature;
+                }).collect(Collectors.toList());
+                break;
+            case LIST_LIST_LONG:
+                List<List<Number>> listListInt = (List<List<Number>>) featureValue;
+                features = listListInt.parallelStream().map(list -> {
+                    List<Long> ints = list.parallelStream().map(x -> x.longValue()).collect(Collectors.toList());
+                    Feature feature = Feature.newBuilder().setInt64List(Int64List.newBuilder().addAllValue(ints)).build();
+                    return feature;
+                }).collect(Collectors.toList());
                 break;
             default:
                 throw new ValueException("不支持的值类型");

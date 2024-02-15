@@ -107,13 +107,23 @@ public abstract class BaseService {
         Map<String, String> ctxMap = userInfo.getContextMap();
         for (String name : userSchemaSet) { //@user
             // u_imp_cnt_d90, u_advertiser_id_imp_cnt_d90(advertiser_id注意下划线)
-            if (dtypeMap.get(name).contains("ARRAY")) {
+            if (dtypeMap.get(name).contains("ARRAY<STRING>")) {
                 List<String> tfList = StringHelper.getTfList(userMap.getOrDefault(name, ""), ",", seqLengthMap.get(name), "_");
                 ctxFeatures.put(name, new TFServingFeature(tfList, VarType.LIST_STR));
+            } else if (dtypeMap.get(name).contains("ARRAY<FLOAT>")) {
+                List<String> list = StringHelper.getTfList(userMap.getOrDefault(name, "-1"), ",", seqLengthMap.get(name), "-1");
+                List<Float> tfList = list.parallelStream().map(x -> StringHelper.parseFloat(x, (float) -1.0)).collect(Collectors.toList());
+                ctxFeatures.put(name, new TFServingFeature(tfList, VarType.LIST_FLOAT));
+            } else if (dtypeMap.get(name).contains("ARRAY<LONG>")) {
+                List<String> list = StringHelper.getTfList(userMap.getOrDefault(name, "-1"), ",", seqLengthMap.get(name), "-1");
+                List<Long> tfList = list.parallelStream().map(x -> StringHelper.parseLong(x, -1)).collect(Collectors.toList());
+                ctxFeatures.put(name, new TFServingFeature(tfList, VarType.LIST_LONG));
             } else if (dtypeMap.get(name).equalsIgnoreCase("STRING")) {
                 ctxFeatures.put(name, new TFServingFeature(userMap.getOrDefault(name, "1"), VarType.STR));
             } else if (dtypeMap.get(name).equalsIgnoreCase("FLOAT")) {
-                ctxFeatures.put(name, new TFServingFeature(StringHelper.parseFloat(userMap.get(name), -1), VarType.FLOAT));
+                ctxFeatures.put(name, new TFServingFeature(StringHelper.parseFloat(userMap.get(name), (float) -1.0), VarType.FLOAT));
+            } else if (dtypeMap.get(name).equalsIgnoreCase("LONG")) {
+                ctxFeatures.put(name, new TFServingFeature(StringHelper.parseLong(userMap.get(name), -1), VarType.LONG));
             }
 
         }
@@ -121,13 +131,23 @@ public abstract class BaseService {
         for (String name : ctxSchemaSet) { //@ctx
             // hour, display
             String v = StringHelper.fillNa(ctxMap.get(name));
-            if (dtypeMap.get(name).contains("ARRAY")) {
+            if (dtypeMap.get(name).contains("ARRAY<STRING>")) {
                 List<String> tfList = StringHelper.getTfList(v, ",", seqLengthMap.get(name), "_");
                 ctxFeatures.put(name, new TFServingFeature(tfList, VarType.LIST_STR));
+            } else if (dtypeMap.get(name).contains("ARRAY<FLOAT>")) {
+                List<String> list = StringHelper.getTfList(v, ",", seqLengthMap.get(name), "-1");
+                List<Float> tfList = list.parallelStream().map(x -> StringHelper.parseFloat(x, (float) -1.0)).collect(Collectors.toList());
+                ctxFeatures.put(name, new TFServingFeature(tfList, VarType.LIST_FLOAT));
+            } else if (dtypeMap.get(name).contains("ARRAY<LONG>")) {
+                List<String> list = StringHelper.getTfList(v, ",", seqLengthMap.get(name), "-1");
+                List<Long> tfList = list.parallelStream().map(x -> StringHelper.parseLong(x, -1)).collect(Collectors.toList());
+                ctxFeatures.put(name, new TFServingFeature(tfList, VarType.LIST_LONG));
             } else if (dtypeMap.get(name).equalsIgnoreCase("STRING")) {
                 ctxFeatures.put(name, new TFServingFeature(v, VarType.STR));
             } else if (dtypeMap.get(name).equalsIgnoreCase("FLOAT")) {
-                ctxFeatures.put(name, new TFServingFeature(StringHelper.parseFloat(v, -1), VarType.FLOAT));
+                ctxFeatures.put(name, new TFServingFeature(StringHelper.parseFloat(v, (float) -1.0), VarType.FLOAT));
+            } else if (dtypeMap.get(name).equalsIgnoreCase("LONG")) {
+                ctxFeatures.put(name, new TFServingFeature(StringHelper.parseLong(v, -1), VarType.LONG));
             }
         }
 
@@ -144,11 +164,30 @@ public abstract class BaseService {
 
         for (String name : itemSchemaSet) {
             //industry, //i_imp_cnt_d90, i_hour_imp_cnt, u_industry_imp_item_cnt_d90
-            if (dtypeMap.get(name).contains("ARRAY")) {
+            if (dtypeMap.get(name).contains("ARRAY<STRING>")) {
                 List<List<String>> array = items.parallelStream().map(
                         item -> StringHelper.getTfList(StringHelper.fillNa(item.getMap().get(name)), ",", seqLengthMap.get(name), "_")
                 ).collect(Collectors.toList());
                 itemFeatures.put(name, new TFServingFeature(array, VarType.LIST_LIST_STR));
+
+            } else if (dtypeMap.get(name).contains("ARRAY<FLOAT>")) {
+                List<List<Float>> array = items.parallelStream().map(
+                        item -> {
+                            List<String> list = StringHelper.getTfList(StringHelper.fillNa(item.getMap().get(name)), ",", seqLengthMap.get(name), "-1");
+                            List<Float> tfList = list.parallelStream().map(x -> StringHelper.parseFloat(x, (float) -1.0)).collect(Collectors.toList());
+                            return tfList;
+                        }
+                ).collect(Collectors.toList());
+                itemFeatures.put(name, new TFServingFeature(array, VarType.LIST_LIST_FLOAT));
+            } else if (dtypeMap.get(name).contains("ARRAY<LONG>")) {
+                List<List<Long>> array = items.parallelStream().map(
+                        item -> {
+                            List<String> list = StringHelper.getTfList(StringHelper.fillNa(item.getMap().get(name)), ",", seqLengthMap.get(name), "-1");
+                            List<Long> tfList = list.parallelStream().map(x -> StringHelper.parseLong(x, -1)).collect(Collectors.toList());
+                            return tfList;
+                        }
+                ).collect(Collectors.toList());
+                itemFeatures.put(name, new TFServingFeature(array, VarType.LIST_LIST_LONG));
             } else if (dtypeMap.get(name).equalsIgnoreCase("STRING")) {
                 List<String> array = items.parallelStream().map(
                         item -> StringHelper.fillNa(item.getMap().get(name))
@@ -156,9 +195,14 @@ public abstract class BaseService {
                 itemFeatures.put(name, new TFServingFeature(array, VarType.LIST_STR));
             } else if (dtypeMap.get(name).equalsIgnoreCase("FLOAT")) {
                 List<Float> array = items.parallelStream().map(
-                        item -> StringHelper.parseFloat(item.getMap().get(name), -1)
+                        item -> StringHelper.parseFloat(item.getMap().get(name), (float) -1.0)
                 ).collect(Collectors.toList());
                 itemFeatures.put(name, new TFServingFeature(array, VarType.LIST_FLOAT));
+            } else if (dtypeMap.get(name).equalsIgnoreCase("LONG")) {
+                List<Long> array = items.parallelStream().map(
+                        item -> StringHelper.parseLong(item.getMap().get(name), -1)
+                ).collect(Collectors.toList());
+                itemFeatures.put(name, new TFServingFeature(array, VarType.LIST_LONG));
             }
 
         }
