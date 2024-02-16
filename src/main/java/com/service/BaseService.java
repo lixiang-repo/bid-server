@@ -299,13 +299,15 @@ public abstract class BaseService {
         //items.sort((x1, x2) -> -Double.compare(x1.getWeight(), x2.getWeight()));
 
         long time5 = System.currentTimeMillis();
+        List<ItemObject> results = reRank(userInfo, items);
+        long time6 = System.currentTimeMillis();
         logger.info(String.format(
-                "tag:%s, uuid:%s, item_size:%s, user_feature cost time:%d ms, item_feature cost time:%d ms, " +
-                "tfrecord cost time:%d ms, tf serving cost time:%d ms, total time:%d ms",
+                "tag:%s, uuid:%s, item_size:%s, user_feature cost:%d ms, item_feature cost:%d ms, " +
+                "tfrecord cost:%d ms, tf serving cost:%d ms, rerank cost %d ms, total time:%d ms",
                 userInfo.getVersion(), userInfo.getUuid(), items.size(), time2 - time1, time3 - time2,
-                time4 - time3, time5 - time4, time5 - time1
+                time4 - time3, time5 - time4, time6 - time5, time6 - time1
         ));
-        return reRank(userInfo, items);
+        return results;
     }
 
     public List<ItemObject> reRank(UserObject userInfo, List<ItemObject> items) {
