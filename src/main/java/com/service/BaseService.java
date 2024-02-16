@@ -23,26 +23,20 @@ public abstract class BaseService {
 
     HashMap<String, PredictionServiceGrpc.PredictionServiceBlockingStub> stubMap;
 
-    HashMap<String, String> dtypeMap;
+    HashMap<String, HashSet<String>> tagUserSchemaMap = new HashMap<>();
+    HashMap<String, HashSet<String>> tagCtxSchemaMap = new HashMap<>();
+    HashMap<String, HashSet<String>> tagItemSchemaMap = new HashMap<>();
+    HashMap<String, HashMap<String, String>> tagDtypeMap = new HashMap<>();
+    HashMap<String, HashMap<String, Integer>> tagSeqLengthMap = new HashMap<>();
 
-    HashSet<String> userSchemaSet;
+    public void initSchema(String tag, String schemaConf) throws IOException {
+        HashSet<String> userSchemaSet = new HashSet<>();
+        HashSet<String> ctxSchemaSet = new HashSet<>();
+        HashSet<String> itemSchemaSet = new HashSet<>();
+        HashMap<String, String> dtypeMap = new HashMap<>();
+        HashMap<String, Integer> seqLengthMap = new HashMap<>();
 
-    HashSet<String> ctxSchemaSet;
-
-    HashSet<String> itemSchemaSet;
-
-    HashMap<String, Integer> seqLengthMap;
-
-    public void initSchema(String schema) throws IOException {
-        dtypeMap = new HashMap<>();
-
-        userSchemaSet = new HashSet<>();
-        ctxSchemaSet = new HashSet<>();
-        itemSchemaSet = new HashSet<>();
-
-        seqLengthMap = new HashMap<>();
-
-        InputStream fileInputStream = getClass().getClassLoader().getResourceAsStream(schema);
+        InputStream fileInputStream = getClass().getClassLoader().getResourceAsStream(schemaConf);
         BufferedReader br = new BufferedReader(new InputStreamReader(fileInputStream));
         String line;
         while ((line = br.readLine()) != null) {
@@ -71,11 +65,17 @@ public abstract class BaseService {
                 }
             }
         }
-        logger.info("userSchemaSet: " + userSchemaSet);
-        logger.info("ctxSchemaSet: " + ctxSchemaSet);
-        logger.info("itemSchemaSet: " + itemSchemaSet);
-        logger.info("dtypeMap: " + dtypeMap);
-        logger.info("seqLengthMap: " + seqLengthMap);
+        tagUserSchemaMap.put(tag, userSchemaSet);
+        tagCtxSchemaMap.put(tag, ctxSchemaSet);
+        tagItemSchemaMap.put(tag, itemSchemaSet);
+        tagDtypeMap.put(tag, dtypeMap);
+        tagSeqLengthMap.put(tag, seqLengthMap);
+
+        logger.info(tag + ": userSchemaSet: " + userSchemaSet);
+        logger.info(tag + ": ctxSchemaSet: " + ctxSchemaSet);
+        logger.info(tag + ": itemSchemaSet: " + itemSchemaSet);
+        logger.info(tag + ": dtypeMap: " + dtypeMap);
+        logger.info(tag + ": seqLengthMap: " + seqLengthMap);
 
     }
 
@@ -87,19 +87,27 @@ public abstract class BaseService {
         stubMap = new HashMap<>();
 
         for (Map.Entry<Object, Object> entry : properties.entrySet()) {
-            String key = entry.getKey().toString();
-            String hosts = entry.getValue().toString();
+            String tag = entry.getKey().toString();
+            String schemaConf = entry.getValue().toString().split("@")[0];
+            String hosts = entry.getValue().toString().split("@")[1];
 
             String host = hosts.split(":")[0];
             int port = Integer.parseInt(hosts.split(":")[1]);
             PredictionServiceGrpc.PredictionServiceBlockingStub stub = TFServingUtils.getPredictionServiceBlockingStub(host, port);
-            stubMap.put(key, stub);
+            stubMap.put(tag, stub);
+            // initSchema
+            initSchema(tag, String.format("%s.conf", schemaConf));
 
-            logger.info(String.format("bid-server init %s hosts:%s", key, hosts));
+            logger.info(String.format("bid-server init %s hosts:%s", tag, hosts));
         }
     }
 
     public UserFeaturesPo getCtxFeatures(UserObject userInfo) {
+        HashSet<String> userSchemaSet = tagUserSchemaMap.get(userInfo.getVersion());
+        HashSet<String> ctxSchemaSet = tagCtxSchemaMap.get(userInfo.getVersion());
+        HashMap<String, String> dtypeMap = tagDtypeMap.get(userInfo.getVersion());
+        HashMap<String, Integer> seqLengthMap = tagSeqLengthMap.get(userInfo.getVersion());
+
         UserFeaturesPo userFeaturesPo = new UserFeaturesPo();
         Map<String, TFServingFeature> ctxFeatures = new HashMap<>();
 
@@ -159,6 +167,10 @@ public abstract class BaseService {
     }
 
     public ItemFeaturesPo getItemFeatures(UserObject userInfo, List<ItemObject> items) {
+        HashSet<String> itemSchemaSet = tagItemSchemaMap.get(userInfo.getVersion());
+        HashMap<String, String> dtypeMap = tagDtypeMap.get(userInfo.getVersion());
+        HashMap<String, Integer> seqLengthMap = tagSeqLengthMap.get(userInfo.getVersion());
+
         ItemFeaturesPo itemFeaturesPo = new ItemFeaturesPo();
         Map<String, TFServingFeature> itemFeatures = new HashMap<>();
 
@@ -212,6 +224,10 @@ public abstract class BaseService {
     }
 
     public List<ItemObject> predict(UserObject userInfo, List<ItemObject> items) {
+        if (! stubMap.containsKey(userInfo.getVersion())) {
+            logger.error(String.format("bid-server tag:%s is error", userInfo.getVersion()));
+            return items;
+        }
         long time1 = System.currentTimeMillis();
         UserFeaturesPo userFeaturesPo = getCtxFeatures(userInfo);
         Map<String, TFServingFeature> ctxFeatures = userFeaturesPo.getCtxFeatures();
@@ -243,45 +259,38 @@ public abstract class BaseService {
         predictRequestBuilder.putInputs("input", inputProto);
 
         long time4 = System.currentTimeMillis();
-        try{
-            if (! stubMap.containsKey(userInfo.getVersion())) {
-                logger.error(String.format("bidserver version:%s is error", userInfo.getVersion()));
+        try {
+            PredictionServiceGrpc.PredictionServiceBlockingStub stub = stubMap.get(userInfo.getVersion());
+            Predict.PredictResponse response = stub.predict(predictRequestBuilder.build());
+            if (response == null) {
+                logger.error("response is null! userinfo: " + userInfo + "items: " + items);
             } else {
-                PredictionServiceGrpc.PredictionServiceBlockingStub stub = stubMap.get(userInfo.getVersion());
-                Predict.PredictResponse response = stub.predict(predictRequestBuilder.build());
+                List<Float> scores1 = response.getOutputsOrThrow("output1").getFloatValList();
+                TensorProto tensor2 = response.getOutputsOrDefault("output2", null);
+                List<Float> scores2 = null;
+                if (tensor2 != null) {
+                    scores2 = tensor2.getFloatValList();
+                }
 
-                if (response == null) {
-                    logger.error("response is null! userinfo: " + userInfo + "items: " + items);
+                int itemSize = items.size();
+                if (scores1 == null || scores1.size() != itemSize || (scores2 != null && scores2.size() != itemSize)) {
+                    logger.error("scores is null or error! userinfo: " + userInfo + "items: " + items);
                 } else {
-                    List<Float> scores1 = response.getOutputsOrThrow("output1").getFloatValList();
-                    TensorProto tensor2 = response.getOutputsOrDefault("output2", null);
-                    List<Float> scores2 = null;
-                    if (tensor2 != null) {
-                        scores2 = tensor2.getFloatValList();
+                    for (int i = 0; i < itemSize; i++) {
+                        ItemObject item = items.get(i);
+                        double pctr = scores1.get(i);
+                        double pcvr = scores2 != null? scores2.get(i): 0.0;
+                        double cpc = item.getCpc();
+                        double cpa = item.getCpa();
+                        double ecpm = cpa > 0? pctr * pcvr * cpa * 1000: pctr * cpc * 1000;
+
+                        item.setPctr(pctr);
+                        item.setPcvr(pcvr);
+                        item.setEcpm(ecpm);
                     }
 
-                    int itemSize = items.size();
-                    if (scores1 == null || scores1.size() != itemSize || (scores2 != null && scores2.size() != itemSize)) {
-                        logger.error("scores is null or error! userinfo: " + userInfo + "items: " + items);
-                    } else {
-
-                        for (int i = 0; i < itemSize; i++) {
-                            ItemObject item = items.get(i);
-                            double pctr = scores1.get(i);
-                            double pcvr = scores2 != null? scores2.get(i): 0.0;
-                            double cpc = item.getCpc();
-                            double cpa = item.getCpa();
-                            double ecpm = cpa > 0? pctr * pcvr * cpa * 1000: pctr * cpc * 1000;
-
-                            item.setPctr(pctr);
-                            item.setPcvr(pcvr);
-                            item.setEcpm(ecpm);
-
-                        }
-                    }
                 }
             }
-
         } catch (Exception e){
             logger.error("bid-server Exception: " + e + " userinfo: " + userInfo + " items: " + items);
         }
@@ -291,11 +300,15 @@ public abstract class BaseService {
 
         long time5 = System.currentTimeMillis();
         logger.info(String.format(
-                "uuid:%s, item_size:%s, user_feature cost time:%d ms,  item_feature cost time:%d ms, " +
-                        "tfrecord cost time:%d ms, tf serving cost time:%d ms, total time:%d ms",
-                userInfo.getUuid(), items.size(), time2 - time1, time3 - time2,
+                "tag:%s, uuid:%s, item_size:%s, user_feature cost time:%d ms, item_feature cost time:%d ms, " +
+                "tfrecord cost time:%d ms, tf serving cost time:%d ms, total time:%d ms",
+                userInfo.getVersion(), userInfo.getUuid(), items.size(), time2 - time1, time3 - time2,
                 time4 - time3, time5 - time4, time5 - time1
         ));
+        return reRank(userInfo, items);
+    }
+
+    public List<ItemObject> reRank(UserObject userInfo, List<ItemObject> items) {
         return items;
     }
 
