@@ -45,7 +45,6 @@ public abstract class BaseService {
             }
             String name = line.split(" +")[0];
             String dType = line.split(" +")[1];
-            dtypeMap.put(name, dType);
             if (line.contains("@user")) {
                 userSchemaSet.add(name);
             } else if (line.contains("@ctx")) {
@@ -55,6 +54,7 @@ public abstract class BaseService {
             } else {
                 throw new IOException("@user @ctx @item must in line!");
             }
+            dtypeMap.put(name, dType);
             if (dType.contains("ARRAY")) {
                 if (dType.contains("(")) {
                     //ARRAY<STRING>(10)
