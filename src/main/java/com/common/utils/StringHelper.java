@@ -1,9 +1,5 @@
 package com.common.utils;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
-
 import java.util.*;
 
 
@@ -16,39 +12,21 @@ public class StringHelper {
         return x;
     }
 
-    public static int parseInt(String s, int defaultValue){
-        int ret = defaultValue;
-
-        try{
-            ret = Integer.parseInt(s);
-        } catch (Exception e){
-
-        }
-
-        return ret;
-    }
-
-    public static long parseLong(String s, long defaultValue){
-        long ret = defaultValue;
-
-        try{
+    public static long parseLong(String s, long dv){
+        long ret = dv;
+        try {
             ret = Long.parseLong(s);
         } catch (Exception e){
-
         }
-
         return ret;
     }
 
-    public static float parseFloat(String s, float defaultValue){
-        float ret = defaultValue;
-
-        try{
+    public static float parseFloat(String s, float dv){
+        float ret = dv;
+        try {
             ret = Float.parseFloat(s);
         } catch (Exception e){
-
         }
-
         return ret;
     }
 
