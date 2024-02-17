@@ -11,7 +11,7 @@ public class BidService extends BaseService {
     @PostConstruct
     public void init() throws IOException {
         logger = LoggerFactory.getLogger("BidService");
-        initStubMap("tfserving.conf");
+        initStubMap("tf-serving.conf");
     }
 
 }
