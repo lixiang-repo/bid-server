@@ -1,5 +1,6 @@
 package com.common.utils;
 
+import com.alibaba.fastjson.JSON;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,8 +19,8 @@ public class RedisHelper {
     static {
         try {
             properties.load(new InputStreamReader(RedisHelper.class.getClassLoader().getResourceAsStream("application.properties"), "UTF-8"));
-            String profile = properties.getProperty("spring.profiles.active");
-            String envFile = "application-" + profile + ".properties";
+            String env = properties.getProperty("spring.profiles.active");
+            String envFile = "application-" + env + ".properties";
             Properties envProps = new Properties();
             envProps.load(new InputStreamReader(RedisHelper.class.getClassLoader().getResourceAsStream(envFile), "UTF-8"));
             redisHosts = envProps.getProperty("redis.hosts");
@@ -53,7 +54,7 @@ public class RedisHelper {
         try {
             jedis = pool.getResource();
             String value = jedis.get(prefix + key);
-            if(value != null) {
+            if (value != null) {
                 list.addAll(Arrays.asList(value.split(",")));
             }
         } catch (Exception e) {
