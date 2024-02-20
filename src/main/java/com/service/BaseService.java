@@ -265,20 +265,24 @@ public abstract class BaseService {
             if (response == null) {
                 logger.error("response is null! userinfo: " + userInfo + "items: " + items);
             } else {
-                List<Float> scores1 = response.getOutputsOrThrow("output1").getFloatValList();
+                TensorProto tensor1 = response.getOutputsOrDefault("output1", null);
                 TensorProto tensor2 = response.getOutputsOrDefault("output2", null);
+                List<Float> scores1 = null;
                 List<Float> scores2 = null;
+                if (tensor1 != null) {
+                    scores1 = tensor1.getFloatValList();
+                }
                 if (tensor2 != null) {
                     scores2 = tensor2.getFloatValList();
                 }
 
                 int itemSize = items.size();
-                if (scores1 == null || scores1.size() != itemSize || (scores2 != null && scores2.size() != itemSize)) {
+                if ((scores1 == null && scores2 == null) || (scores1 != null && scores1.size() != itemSize) || (scores2 != null && scores2.size() != itemSize)) {
                     logger.error("scores is null or error! userinfo: " + userInfo + "items: " + items);
                 } else {
                     for (int i = 0; i < itemSize; i++) {
                         ItemObject item = items.get(i);
-                        double pctr = scores1.get(i);
+                        double pctr = scores1 != null? scores1.get(i): 0.0;
                         double pcvr = scores2 != null? scores2.get(i): 0.0;
                         double cpc = item.getCpc();
                         double cpa = item.getCpa();
